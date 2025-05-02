@@ -27,7 +27,7 @@ Este proyecto es una aplicación de escritorio desarrollada en Java Swing que pe
 > Todos los cambios se mantienen mientras la aplicación está abierta, usando una instancia compartida de inventario.
 
 ---
-
+[Ver demostración en video](https://drive.google.com/your_video_link_aqui](https://drive.google.com/drive/folders/1Xg_UfBdjPZ3XOdoZAwDeI8f-njRrFFfA?usp=sharing))
 
 - Capturas de pantalla
 
