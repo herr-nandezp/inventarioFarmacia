@@ -7,6 +7,9 @@ package sistemainventariofarmacia;
 
 import sistemainventariofarmacia.inventario.dto.ProductoDTO;
 import sistemainventariofarmacia.inventario.dto.inventario.inventarioFarmacia.inventarioFarmacia;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  *
@@ -177,7 +180,13 @@ public class ActualizarPrecio extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
-        actualizarPrecio(inventario.getProductos(), inventario.getContadorProductos());
+                
+        String codigo = txtCodigo1.getText().trim();
+        double nuevoPrecio = Double.parseDouble(txtPrecioNuevo.getText().trim());
+
+        actualizarPrecioProducto(codigo, nuevoPrecio);
+
+        
     }//GEN-LAST:event_btnActualizarActionPerformed
 
     private void btnReturnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReturnActionPerformed
@@ -187,7 +196,62 @@ public class ActualizarPrecio extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_btnReturnActionPerformed
     
-    private void actualizarPrecio (ProductoDTO[] productos, int cantidad){
+    public void actualizarPrecioProducto(String codigo, double nuevoPrecio) {
+    errorCodigo error = new errorCodigo();
+    boolean encontrado = false;
+    
+    
+    
+    try {
+    Connection conn = ConexionDB.conectar();
+    if (conn == null) {
+        System.out.println("❌ No se pudo conectar a la base de datos.");
+        return;
+    }
+
+    // 1. Buscar el producto
+    String sqlSelect = "SELECT * FROM productos WHERE codigo_barras = ?";
+    PreparedStatement stmtSelect = conn.prepareStatement(sqlSelect);
+    stmtSelect.setString(1, codigo);
+    ResultSet rs = stmtSelect.executeQuery();
+
+    if (rs.next()) {
+        // Producto encontrado
+        encontrado = true;
+
+        txtboxNombre.setText(rs.getString("nombre"));
+        txtboxPrecioAnterior.setText(String.valueOf(rs.getDouble("precio_unitario")));
+
+        double precio = Double.parseDouble(txtPrecioNuevo.getText());
+
+        // 2. Actualizar el precio en la base de datos
+        String sqlUpdate = "UPDATE productos SET precio_unitario = ? WHERE codigo_barras = ?";
+        PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate);
+        stmtUpdate.setDouble(1, precio);
+        stmtUpdate.setString(2, codigo);
+        stmtUpdate.executeUpdate();
+
+        txtboxPrecioNuevo.setText(String.valueOf(precio));
+
+        stmtUpdate.close();
+    }
+
+    rs.close();
+    stmtSelect.close();
+    conn.close();
+
+    } catch (Exception e) {
+    System.out.println("Error al actualizar precio: " + e.getMessage());
+        }
+
+    if (!encontrado) {
+        error.setVisible(true);
+        }
+    }
+
+
+    
+    /**private void actualizarPrecio (ProductoDTO[] productos, int cantidad){
         errorCodigo error = new errorCodigo();
         String codigo = txtCodigo1.getText().trim();
         boolean encontrado = false;
@@ -208,7 +272,7 @@ public class ActualizarPrecio extends javax.swing.JFrame {
             error.setVisible(true);
         }
         
-    }
+    }*/
     
     /**
      * @param args the command line arguments

@@ -7,11 +7,11 @@ package sistemainventariofarmacia;
 
 import sistemainventariofarmacia.inventario.dto.ProductoDTO;
 import sistemainventariofarmacia.inventario.dto.inventario.inventarioFarmacia.inventarioFarmacia;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
-/**
- *
- * @author a12
- */
+
 public class VenderProducto extends javax.swing.JFrame {
 
     private inventarioFarmacia inventario;
@@ -136,7 +136,9 @@ public class VenderProducto extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnVenderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVenderActionPerformed
-        venderProducto(inventario.getProductos(),inventario.getContadorProductos());       
+        venderProducto();
+
+        //venderProducto(inventario.getProductos(),inventario.getContadorProductos());       
     }//GEN-LAST:event_btnVenderActionPerformed
 
     private void btnReturnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReturnActionPerformed
@@ -145,7 +147,65 @@ public class VenderProducto extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_btnReturnActionPerformed
 
-    private void venderProducto(ProductoDTO[] productos, int cantidad){
+    
+    private void venderProducto() {
+    errorCodigo error = new errorCodigo();
+    String codigo = txtCodigo.getText().trim();
+    boolean encontrado = false;
+
+    try {
+        Connection conn = ConexionDB.conectar();
+        if (conn == null) {
+            System.out.println("❌ No se pudo conectar a la base de datos.");
+            return;
+        }
+
+        // Buscar el producto por código
+        String sqlSelect = "SELECT * FROM productos WHERE codigo_barras = ?";
+        PreparedStatement stmtSelect = conn.prepareStatement(sqlSelect);
+        stmtSelect.setString(1, codigo);
+        ResultSet rs = stmtSelect.executeQuery();
+
+        if (rs.next()) {
+            int stockActual = rs.getInt("cantidad_stock");
+
+            if (stockActual > 0) {
+                encontrado = true;
+
+                // Mostrar nombre y nuevo stock en campos de texto
+                txtboxNombre1.setText(rs.getString("nombre"));
+                int nuevoStock = stockActual - 1;
+
+                // Actualizar en base de datos
+                String sqlUpdate = "UPDATE productos SET cantidad_stock = ? WHERE codigo_barras = ?";
+                PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate);
+                stmtUpdate.setInt(1, nuevoStock);
+                stmtUpdate.setString(2, codigo);
+                stmtUpdate.executeUpdate();
+                stmtUpdate.close();
+
+                txtboxCantidad.setText(String.valueOf(nuevoStock));
+
+                System.out.println("✅ Venta realizada. Nuevo stock: " + nuevoStock);
+            }
+        }
+
+        if (!encontrado) {
+            System.out.println("Producto no encontrado o sin stock.");
+            error.setVisible(true);
+        }
+
+        rs.close();
+        stmtSelect.close();
+        conn.close();
+
+    } catch (Exception e) {
+        System.out.println("Error al vender producto: " + e.getMessage());
+    }
+}
+
+    
+    /**private void venderProducto(ProductoDTO[] productos, int cantidad){
         errorCodigo error = new errorCodigo();
         String codigo = txtCodigo.getText().trim();
         boolean encontrado = false;
@@ -163,7 +223,7 @@ public class VenderProducto extends javax.swing.JFrame {
         if (!encontrado) {
             error.setVisible(true);
         }                
-    }
+    }*/
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnReturn;

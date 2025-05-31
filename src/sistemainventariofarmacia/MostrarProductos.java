@@ -7,6 +7,10 @@ package sistemainventariofarmacia;
 
 import sistemainventariofarmacia.inventario.dto.ProductoDTO;
 import sistemainventariofarmacia.inventario.dto.inventario.inventarioFarmacia.inventarioFarmacia;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -19,10 +23,44 @@ public class MostrarProductos extends javax.swing.JFrame {
     public MostrarProductos(inventarioFarmacia inventario) {
         initComponents();
         setLocationRelativeTo(null);
+        cargarProductosDB();
         
         this.inventario = inventario;
-        mostrarProductosEnTabla(inventario.getProductos(), inventario.getContadorProductos());
     }
+    
+    public void cargarProductosDB() {
+                
+    try {
+        Connection conn = ConexionDB.conectar();
+        if (conn == null) {
+            System.out.println("❌ No se pudo establecer conexión con la base de datos.");
+            return;
+        }
+
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT * FROM productos");
+
+        DefaultTableModel modelo = (DefaultTableModel) tablaInventario.getModel();
+        modelo.setRowCount(0); // limpia la tabla
+
+        while (rs.next()) {
+            modelo.addRow(new Object[]{
+                rs.getString("nombre"),
+                rs.getString("codigo_barras"),
+                rs.getDouble("precio_unitario"),
+                rs.getInt("cantidad_stock")
+            });
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error al cargar productos: " + e.getMessage());
+        }
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -51,7 +89,7 @@ public class MostrarProductos extends javax.swing.JFrame {
                 {null, null, null, null}
             },
             new String [] {
-                "NOMBRE", "CODIGO", "PRECIO", "CANTIDAD"
+                "CODIGO", "NOMBRE", "PRECIO", "CANTIDAD"
             }
         ) {
             Class[] types = new Class [] {
@@ -124,6 +162,8 @@ public class MostrarProductos extends javax.swing.JFrame {
             });
         }
     }
+    
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnReturn;

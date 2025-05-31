@@ -5,6 +5,11 @@
  */
 package sistemainventariofarmacia;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import javax.swing.table.DefaultTableModel;
+import java.sql.PreparedStatement;
 import sistemainventariofarmacia.inventario.dto.ProductoDTO;
 import sistemainventariofarmacia.inventario.dto.inventario.inventarioFarmacia.inventarioFarmacia;
 
@@ -19,8 +24,10 @@ public class agregarProducto extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         
-        MostrarProductos mostrar = new MostrarProductos(inventario);
-        mostrarProductosEnTabla(inventario.getProductos(), inventario.getContadorProductos());
+        cargarProductosEnTabla();
+
+        //MostrarProductos mostrar = new MostrarProductos(inventario);
+        //mostrarProductosEnTabla(inventario.getProductos(), inventario.getContadorProductos());
         
     }
 
@@ -45,7 +52,7 @@ public class agregarProducto extends javax.swing.JFrame {
         btnAgregar = new javax.swing.JButton();
         btnReturn = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tableInventario = new javax.swing.JTable();
+        tablaInventario = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -75,7 +82,7 @@ public class agregarProducto extends javax.swing.JFrame {
             }
         });
 
-        tableInventario.setModel(new javax.swing.table.DefaultTableModel(
+        tablaInventario.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -94,7 +101,8 @@ public class agregarProducto extends javax.swing.JFrame {
                 return types [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(tableInventario);
+        tablaInventario.setName(""); // NOI18N
+        jScrollPane1.setViewportView(tablaInventario);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -161,7 +169,9 @@ public class agregarProducto extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarActionPerformed
-        agregarProducto(inventario.getProductos(),inventario.getContadorProductos());
+        insertarProductoEnBD();
+
+        //agregarProducto(inventario.getProductos(),inventario.getContadorProductos());
     }//GEN-LAST:event_btnAgregarActionPerformed
 
     private void btnReturnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReturnActionPerformed
@@ -171,7 +181,49 @@ public class agregarProducto extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_btnReturnActionPerformed
 
-    public void agregarProducto(ProductoDTO[] productos, int cantidad){
+    public void insertarProductoEnBD() {
+    try {
+        // Obtener los datos del formulario
+        String codigo = txtCodigo.getText().trim();
+        String nombre = txtNombre.getText().trim();
+        double precio = Double.parseDouble(txtPrecio.getText().trim());
+        int cantidad = Integer.parseInt(txtCantidad.getText().trim());
+
+        // Conectarse y preparar la inserción
+        Connection conn = ConexionDB.conectar();
+        if (conn == null) {
+            System.out.println("❌ No se pudo conectar a la base de datos.");
+            return;
+        }
+
+        String sql = "INSERT INTO productos (codigo_barras, nombre, precio_unitario, cantidad_stock) VALUES (?, ?, ?, ?)";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, codigo);
+        stmt.setString(2, nombre);
+        stmt.setDouble(3, precio);
+        stmt.setInt(4, cantidad);
+
+        stmt.executeUpdate();
+        stmt.close();
+        conn.close();
+
+        System.out.println("✅ Producto agregado correctamente.");
+
+        // (Opcional) Limpiar campos después de guardar
+        txtCodigo.setText("");
+        txtNombre.setText("");
+        txtPrecio.setText("");
+        txtCantidad.setText("");
+
+    } catch (NumberFormatException e) {
+        System.out.println("⚠️ Error de formato: asegúrate de ingresar números válidos.");
+    } catch (Exception e) {
+        System.out.println("⚠️ Error al insertar producto: " + e.getMessage());
+    }
+    cargarProductosEnTabla();
+}
+    
+    /**public void agregarProducto(ProductoDTO[] productos, int cantidad){
         errorCodigoExistente error = new errorCodigoExistente();
         String codigoNuevo = txtCodigo.getText().trim();
         boolean existe = false;
@@ -198,22 +250,40 @@ public class agregarProducto extends javax.swing.JFrame {
             inventario.setContadorProductos(cantidad);
             mostrarProductosEnTabla(inventario.getProductos(), inventario.getContadorProductos());
             }
-    }
+    }*/
     
-    private void mostrarProductosEnTabla(ProductoDTO[] productos, int cantidad) {
-    javax.swing.table.DefaultTableModel tabla = (javax.swing.table.DefaultTableModel) tableInventario.getModel();
-    tabla.setRowCount(0);
+    private void cargarProductosEnTabla() {
+    try {
+        Connection conn = ConexionDB.conectar();
+        if (conn == null) {
+            System.out.println("❌ No se pudo conectar a la base de datos.");
+            return;
+        }
 
-        for (int i = 0; i < cantidad; i++) {
-            ProductoDTO producto = productos[i];
-            tabla.addRow(new Object[]{
-                producto.getNombre(),
-                producto.getCodigoBarras(),
-                producto.getPrecioUnitario(),
-                producto.getCantidadStock()
+        String sql = "SELECT * FROM productos";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+
+        DefaultTableModel modelo = (DefaultTableModel) tablaInventario.getModel();
+        modelo.setRowCount(0); // Limpiar tabla
+
+        while (rs.next()) {
+            modelo.addRow(new Object[]{
+                rs.getString("nombre"),
+                rs.getString("codigo_barras"),
+                rs.getDouble("precio_unitario"),
+                rs.getInt("cantidad_stock")
             });
         }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+    } catch (Exception e) {
+        System.out.println("⚠️ Error al cargar productos: " + e.getMessage());
     }
+}
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAgregar;
@@ -224,7 +294,7 @@ public class agregarProducto extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tableInventario;
+    private javax.swing.JTable tablaInventario;
     private javax.swing.JTextField txtCantidad;
     private javax.swing.JTextField txtCodigo;
     private javax.swing.JTextField txtNombre;

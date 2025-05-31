@@ -2,16 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/ActualizarPrecio.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/VentanaPrincipal.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/MostrarProductos.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/VenderProducto.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/agregarProducto.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/sistemaInventarioFarmacia.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/inventario/dto/inventario/inventarioFarmacia/inventarioFarmacia.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/ConsultarProducto.java</file>
-            <file>file:/Users/a12/NetBeansProjects/SistemaInventarioFarmacia/src/sistemainventariofarmacia/inventario/dto/ProductoDTO.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>

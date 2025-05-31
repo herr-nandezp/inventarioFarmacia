@@ -8,6 +8,9 @@ package sistemainventariofarmacia;
 import javax.swing.JTextField;
 import sistemainventariofarmacia.inventario.dto.ProductoDTO;
 import sistemainventariofarmacia.inventario.dto.inventario.inventarioFarmacia.inventarioFarmacia;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 /**
  *
@@ -142,7 +145,9 @@ public class ConsultarProducto extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnConsultarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConsultarActionPerformed
-        consultarProductos(inventario.getProductos(), inventario.getContadorProductos());                          
+        //consultarProductos(inventario.getProductos(), inventario.getContadorProductos()); 
+        String codigo = txtCodigo.getText().trim();
+        buscarProductoPorCodigo(codigo);
     }//GEN-LAST:event_btnConsultarActionPerformed
 
     private void btnReturnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReturnActionPerformed
@@ -152,7 +157,8 @@ public class ConsultarProducto extends javax.swing.JFrame {
         dispose();
     }//GEN-LAST:event_btnReturnActionPerformed
 
-    public void consultarProductos (ProductoDTO[] productos, int cantidad){
+    /**
+     * public void consultarProductos (ProductoDTO[] productos, int cantidad){
         errorCodigo error = new errorCodigo();
         String codigo = txtCodigo.getText().trim();
         boolean encontrado = false;
@@ -171,7 +177,46 @@ public class ConsultarProducto extends javax.swing.JFrame {
             error.setVisible(true);
         }
         
+    }*/
+    
+    public void buscarProductoPorCodigo(String codigo) {
+    try {
+        Connection conn = ConexionDB.conectar();
+        if (conn == null) {
+            System.out.println("❌ No se pudo conectar a la base de datos.");
+            return;
+        }
+
+        String sql = "SELECT * FROM productos WHERE codigo_barras = ?";
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, codigo);
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            // Suponiendo que tienes campos de texto llamados:
+            // txtNombre, txtPrecio, txtCantidad
+
+            txtboxNombre.setText(rs.getString("nombre"));
+            txtboxPrecio.setText(String.valueOf(rs.getDouble("precio_unitario")));
+            txtboxCantidad.setText(String.valueOf(rs.getInt("cantidad_stock")));
+            System.out.println("✅ Producto encontrado.");
+        } else {
+            System.out.println("Producto no encontrado.");
+            txtboxNombre.setText("");
+            txtboxPrecio.setText("");
+            txtboxCantidad.setText("");
+        }
+
+        rs.close();
+        stmt.close();
+        conn.close();
+
+        } catch (Exception e) {
+            System.out.println("Error al buscar producto: " + e.getMessage());
+        }
     }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnConsultar;
